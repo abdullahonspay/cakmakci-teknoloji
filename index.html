@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Çakmakçı Teknoloji - Şirket Tanıtım Sayfası</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1c1410;
+    --ink-soft: #5a3e28;
+    --ink-muted: #a08060;
+    --bg: #f7f6f3;
+    --bg-card: #ffffff;
+    --accent: #e8600a;
+    --accent-light: #fef0e6;
+    --accent-mid: #f4996a;
+    --green: #2a9d6e;
+    --green-light: #e0f5ed;
+    --border: rgba(180, 90, 20, 0.12);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html.intro-active,
+  body.intro-active {
+    overflow: hidden;
+    height: 100%;
+    touch-action: none;
+  }
+
+  .intro-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    background: rgba(243, 240, 233, 1);
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    transition:
+      opacity 0.56s cubic-bezier(0.22, 0.7, 0.18, 1),
+      transform 0.72s cubic-bezier(0.22, 0.7, 0.18, 1),
+      visibility 0.56s ease,
+      background-color 0.8s ease;
+    --logo-shift-x: 0px;
+    --logo-shift-y: 0px;
+    --logo-final-scale: 0.46;
+  }
+
+  .intro-screen.is-finishing {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8%) scale(0.975);
+  }
+
+  .intro-screen.is-settling {
+    background: rgba(243, 240, 233, 1);
+  }
+
+  .intro-screen.is-settling::before {
+    opacity: 0;
+    transition: opacity 180ms ease;
+  }
+
+  .intro-inner {
+    position: relative;
+    width: min(82vw, 380px);
+    display: grid;
+    place-items: center;
+  }
+
+  .intro-logo-wrap {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0;
+    animation: introLogoReveal 420ms cubic-bezier(0.18, 0.75, 0.25, 1) 40ms forwards;
+    will-change: transform, opacity;
+    transition: transform 1080ms cubic-bezier(0.2, 0.78, 0.18, 1), opacity 680ms ease;
+  }
+
+  .intro-screen.is-settling .intro-logo-wrap {
+    opacity: 0;
+    transition: transform 1080ms cubic-bezier(0.2, 0.78, 0.18, 1), opacity 140ms ease;
+  }
+
+  .intro-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(232, 96, 10, 0.12), rgba(232, 96, 10, 0.03) 42%, transparent 62%);
+    opacity: 0;
+    animation: introBackgroundReveal 360ms ease 40ms forwards;
+  }
+
+  .intro-screen.is-transitioning .intro-logo-wrap {
+    transform: translate3d(var(--logo-shift-x), var(--logo-shift-y), 0) scale(var(--logo-final-scale));
+  }
+
+  .intro-screen.is-transitioning {
+    background: rgba(243, 240, 233, 1);
+  }
+
+  .intro-logo {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    display: block;
+    filter: drop-shadow(0 10px 24px rgba(28, 20, 16, 0.2));
+  }
+
+  .hero-brand {
+    position: relative;
+    z-index: 2;
+    width: min(44vw, 200px);
+    margin: 0 auto 1.2rem;
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+    transition: opacity 620ms cubic-bezier(0.22, 0.75, 0.2, 1), transform 620ms cubic-bezier(0.22, 0.75, 0.2, 1);
+  }
+
+  .hero-brand img {
+    width: 100%;
+    display: block;
+  }
+
+  .hero-item {
+    opacity: 0;
+    transform: translateY(18px);
+    will-change: opacity, transform;
+  }
+
+  body.intro-complete .hero-brand {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  body.hero-reveal .hero-item {
+    animation: heroItemReveal 620ms cubic-bezier(0.2, 0.75, 0.2, 1) forwards;
+  }
+
+  body.hero-reveal .hero-item-headline { animation-delay: 120ms; }
+  body.hero-reveal .hero-item-copy { animation-delay: 260ms; }
+  body.hero-reveal .hero-item-actions { animation-delay: 410ms; }
+
+  .fullpage-section {
+    scroll-margin-top: 0;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 5.5rem clamp(1.5rem, 5vw, 3rem) 5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(232, 96, 10, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+    animation: pulse 6s ease-in-out infinite;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 0.78rem; font-weight: 500;
+    padding: 0.3rem 0.9rem;
+    border-radius: 20px;
+    margin-bottom: 1.75rem;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    max-width: 780px;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--accent);
+  }
+
+  .hero p {
+    font-size: clamp(1rem, 2vw, 1.15rem);
+    color: #4a3525;
+    max-width: 520px;
+    margin-bottom: 2rem;
+    line-height: 1.75;
+  }
+
+  .hero-actions {
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; justify-content: center;
+  }
+
+    .hero-scroll-cue {
+      position: absolute;
+      left: 50%;
+      bottom: clamp(1.5rem, 4vw, 2.4rem);
+      transform: translateX(-50%);
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.55rem;
+      color: rgba(28, 20, 16, 0.62);
+      text-decoration: none;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      font-weight: 700;
+      z-index: 2;
+      transition: color 0.25s ease, transform 0.25s ease;
+    }
+
+    .hero-scroll-cue:hover {
+     display: inline-flex;
+      transform: translateX(-50%) translateY(2px);
+    }
+
+    .hero-scroll-cue-label {
+      white-space: nowrap;
+      display:none;
+    }
+
+    .hero-scroll-cue-mouse {
+      width: 24px;
+      height: 38px;
+      border: 1.5px solid rgba(28, 20, 16, 0.26);
+      border-radius: 999px;
+      display: flex;
+      justify-content: center;
+      padding-top: 0.45rem;
+      position: relative;
+      background: rgba(255, 255, 255, 0.36);
+      box-shadow: 0 10px 24px rgba(28, 20, 16, 0.05);
+    }
+
+    .hero-scroll-cue-mouse::before {
+      content: '';
+      width: 4px;
+      height: 8px;
+      border-radius: 999px;
+      background: currentColor;
+      animation: scrollCueTrack 1.8s ease-in-out infinite;
+    }
+
+    .hero-scroll-cue-arrows {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.1rem;
+    }
+
+    .hero-scroll-cue-arrows span {
+      width: 8px;
+      height: 8px;
+      border-right: 1.5px solid currentColor;
+      border-bottom: 1.5px solid currentColor;
+      transform: rotate(45deg);
+      opacity: 0;
+      animation: scrollCueArrow 1.8s ease-in-out infinite;
+    }
+
+    .hero-scroll-cue-arrows span:nth-child(2) {
+      animation-delay: 0.18s;
+    }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    padding: 0.9rem 2.2rem;
+    border-radius: 30px;
+    font-size: 0.95rem; font-weight: 500;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(232, 96, 10, 0.25);
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(232, 96, 10, 0.32); }
+
+  .btn-ghost {
+    color: var(--ink-soft);
+    padding: 0.9rem 1.7rem;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: flex; align-items: center; gap: 0.4rem;
+    transition: color 0.2s;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    min-height: 44px;
+  }
+  .btn-ghost:hover { color: var(--accent); }
+
+  /* HERO CONTEXT */
+  .hero-context {
+    width: 100%;
+    max-width: 1040px;
+  }
+
+  .section-use-cases {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.6rem;
+  }
+
+  .use-cases-shell {
+    border-radius: 24px;
+    padding: clamp(1.3rem, 3vw, 2rem);
+ 
+  }
+
+  .hero-context-head {
+    text-align: center;
+    margin-bottom: 1.55rem;
+  }
+
+  .hero-context-head span {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--ink-muted);
+    display: inline-block;
+    padding: 0.24rem 0.7rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+  }
+
+  .use-cases-title {
+    margin-top: 0.85rem;
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.7rem, 3vw, 2.45rem);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+
+  .use-cases-sub {
+    max-width: 760px;
+    margin: 0.85rem auto 0;
+    font-size: 0.96rem;
+    color: var(--ink-soft);
+  }
+
+  .hero-context-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.05rem;
+  }
+
+  .hero-context-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.2rem 1.1rem;
+    text-align: left;
+    box-shadow: 0 10px 28px rgba(26, 26, 46, 0.04);
+    transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+  }
+
+  .hero-context-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(232, 96, 10, 0.28);
+    box-shadow: 0 18px 36px rgba(28, 20, 16, 0.09);
+  }
+
+  .hero-context-top {
+    display: flex;
+    align-items: center;
+    gap: 0.62rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .hero-context-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: var(--accent-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .hero-context-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .hero-context-tag {
+    font-size: 0.68rem;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  .hero-context-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-context-card p {
+    font-size: 0.86rem;
+    color: var(--ink-soft);
+    margin-bottom: 0.85rem;
+    max-width: none;
+  }
+
+  .hero-context-list {
+    list-style: none;
+    display: grid;
+    gap: 0.42rem;
+  }
+
+  .hero-context-list li {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .hero-context-list li::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent-mid);
+    flex-shrink: 0;
+  }
+
+  .use-cases-foot {
+    margin-top: 1rem;
+    border-top: 1px dashed var(--border);
+    padding-top: 0.85rem;
+    display: flex;
+    justify-content: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    color: var(--ink-muted);
+    font-size: 0.8rem;
+  }
+
+  /* ABOUT / MISSION / VISION */
+  .section-about {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.8rem;
+  }
+
+  .about-shell {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    border-radius: 28px;
+    padding: clamp(1.35rem, 3.1vw, 2.35rem);
+    position: relative;
+    overflow: hidden;
+    color: #f8f2eb;
+  }
+
+  .about-shell::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+   
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .about-shell > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  .about-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.25fr);
+    gap: clamp(1rem, 2.6vw, 2rem);
+    align-items: stretch;
+  }
+
+  .about-intro {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: clamp(1rem, 2.5vw, 1.55rem);
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .about-kicker {
+    font-size: 0.75rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 0.95rem;
+  }
+
+  .about-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.65rem, 2.9vw, 2.4rem);
+    letter-spacing: -0.02em;
+    line-height: 1.28;
+    color: #fff6ef;
+    margin-bottom: 0.95rem;
+  }
+
+  .about-sub {
+    font-size: 0.95rem;
+    color: rgba(248, 243, 238, 0.8);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+
+  .about-claim {
+    margin-top: auto;
+    border-left: 3px solid rgba(232, 96, 10, 0.72);
+    padding-left: 0.75rem;
+    font-size: 0.86rem;
+    color: rgba(248, 243, 238, 0.8);
+  }
+
+  .about-panels {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .about-panel {
+    border-radius: 18px;
+    padding: 1rem 1rem 0.9rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    transition: transform 0.28s ease, box-shadow 0.28s ease, background 0.28s ease;
+  }
+
+  
+
+  .about-panel.mission {
+    background: linear-gradient(125deg, rgb(36 36 36 / 16%), rgba(255, 255, 255, 0.08));
+    border-color: rgb(159 153 148 / 31%);
+  }
+
+  .about-panel.vision {
+    background: linear-gradient(125deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05));
+  }
+
+  .about-panel h3 {
+    font-size: 1rem;
+    color: #fffdfb;
+    margin-bottom: 0.45rem;
+    letter-spacing: -0.01em;
+  }
+
+  .about-panel p {
+    font-size: 0.87rem;
+    color: rgba(255, 255, 255, 0.84);
+    line-height: 1.65;
+  }
+
+  .about-list {
+    list-style: none;
+    display: grid;
+    gap: 0.42rem;
+    margin-top: 0.8rem;
+  }
+
+  .about-list li {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.82);
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .about-list li::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.8);
+    flex-shrink: 0;
+  }
+
+  .about-metrics {
+    margin-top: 0.85rem;
+    display: flex;
+    justify-content: flex-start;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .about-metrics span {
+    font-size: 0.76rem;
+    color: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 999px;
+    padding: 0.28rem 0.62rem;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  @media (max-width: 980px) {
+    .about-layout {
+      grid-template-columns: 1fr;
+      gap: clamp(0.8rem, 2vw, 1.2rem);
+    }
+
+    .about-panels {
+      gap: 0.7rem;
+    }
+
+    .about-metrics {
+      justify-content: center;
+    }
+  }
+
+  /* FEATURES */
+  .section {
+    padding: clamp(4rem, 8vw, 7rem) clamp(1.5rem, 5vw, 5rem);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-contact {
+    max-width: 100%;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .section-eyebrow {
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.11em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1.2rem;
+  }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 600; line-height: 1.2;
+    letter-spacing: -0.025em;
+    max-width: 560px;
+    margin-bottom: 1rem;
+  }
+
+  .section-title em { font-style: italic; font-weight: 300; color: var(--accent); }
+
+  .section-sub {
+    font-size: 1rem; color: var(--ink-soft);
+    max-width: 500px; margin-bottom: 3.5rem;
+    line-height: 1.7;
+  }
+
+  .features-swiper {
+    width: 100%;
+    padding: 0.2rem 0.2rem 2.8rem;
+  }
+
+  .features-swiper .swiper-slide {
+    height: auto;
+  }
+
+  .feature-card {
+    background: var(--bg-card);
+    padding: 2rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: background 0.25s;
+    cursor: default;
+    height: 100%;
+  }
+  .feature-card:hover { background: #fdfcff; }
+
+  .feature-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1.25rem;
+    font-size: 1.2rem;
+  }
+
+  .feature-icon-purple { background: var(--accent-light); }
+  .feature-icon-green { background: var(--green-light); }
+  .feature-icon-amber { background: #fef3e2; }
+
+  .feature-card h3 {
+    font-size: 1rem; font-weight: 600;
+    margin-bottom: 0.6rem; letter-spacing: -0.01em;
+  }
+
+  .feature-card p {
+    font-size: 0.9rem; color: var(--ink-soft); line-height: 1.65;
+  }
+
+  .features-swiper .swiper-pagination-bullet {
+    width: 8px;
+    height: 8px;
+    background: rgba(232, 96, 10, 0.25);
+    opacity: 1;
+  }
+
+  .features-swiper .swiper-pagination-bullet-active {
+    background: var(--accent);
+  }
+
+  .features-swiper .swiper-button-prev,
+  .features-swiper .swiper-button-next {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--accent);
+    box-shadow: 0 8px 20px rgba(28, 20, 16, 0.08);
+  }
+
+  .features-swiper .swiper-button-prev::after,
+  .features-swiper .swiper-button-next::after {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* SOCIAL PROOF */
+  .testimonials {
+    background: transparent;
+    padding: clamp(4rem, 8vw, 7rem) clamp(1.5rem, 5vw, 5rem);
+    position: relative; overflow: hidden;
+    display: flex;
+    align-items: center;
+  }
+
+  .testimonials::before {
+    content: '';
+    position: absolute; top: -150px; right: -150px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+
+  .testimonials-inner { max-width: 1200px; margin: 0 auto; }
+
+  .testimonials-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 2.5rem; gap: 2rem; flex-wrap: wrap;
+  }
+
+  .testimonials-header h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.025em;
+    max-width: 400px;
+    line-height: 1.2;
+  }
+  .testimonials-header h2 em { font-style: italic; font-weight: 300; }
+
+  .testimonials-sub { font-size: 0.9rem; color: rgba(255,255,255,0.6); max-width: 280px; line-height: 1.6; }
+
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .testimonial-card {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    transition: background 0.25s, transform 0.25s;
+  }
+  .testimonial-card:hover { background: rgba(255,255,255,0.13); transform: translateY(-2px); }
+
+  .testimonial-quote {
+    font-size: 0.95rem; color: rgba(255,255,255,0.95);
+    line-height: 1.7; margin-bottom: 1.25rem;
+  }
+
+  .testimonial-author {
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .author-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 600; color: #fff;
+    flex-shrink: 0;
+  }
+
+  .author-name { font-size: 0.85rem; font-weight: 600; color: #fff; }
+  .author-role { font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-top: 1px; }
+
+  /* PRICING */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3.5rem;
+  }
+
+  .pricing-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    position: relative;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .pricing-card:hover { transform: translateY(-3px); box-shadow: 0 16px 48px rgba(26, 26, 46, 0.07); }
+  .pricing-card.featured { border-color: var(--accent); }
+
+  .pricing-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #fff;
+    font-size: 0.72rem; font-weight: 600;
+    padding: 3px 14px; border-radius: 10px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .pricing-name { font-size: 0.85rem; font-weight: 600; color: var(--ink-muted); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.5rem; }
+
+  .pricing-price {
+    font-family: 'Fraunces', serif;
+    font-size: 2.4rem; font-weight: 600;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.25rem;
+  }
+
+  .pricing-period { font-size: 0.8rem; color: var(--ink-muted); margin-bottom: 1.5rem; }
+
+  .pricing-list { list-style: none; margin-bottom: 2rem; }
+
+  .pricing-list li {
+    font-size: 0.88rem; color: var(--ink-soft);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pricing-list li::before { content: '✓'; color: var(--green); font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
+
+  .btn-outline {
+    display: block; text-align: center;
+    border: 1.5px solid var(--border);
+    color: var(--ink);
+    padding: 0.75rem;
+    border-radius: 30px;
+    font-size: 0.9rem; font-weight: 500;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-filled {
+    display: block; text-align: center;
+    background: var(--accent);
+    color: #fff;
+    padding: 0.75rem;
+    border-radius: 30px;
+    font-size: 0.9rem; font-weight: 500;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .btn-filled:hover { opacity: 0.88; }
+
+  .contact-map {
+    width: 100%;
+    min-height: 100svh;
+    position: relative;
+  }
+
+  #leaflet-contact-map {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .leaflet-container {
+    width: 100%;
+    height: 100%;
+    font-family: 'Inter', sans-serif;
+  }
+
+
+
+  .contact-map::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: linear-gradient(110deg, rgba(10, 14, 20, 0.48) 0%, rgba(10, 14, 20, 0.22) 48%, rgba(10, 14, 20, 0.12) 100%);
+  }
+
+  .contact-overlay {
+    position: absolute;
+    top: 50%;
+    left: clamp(1rem, 6vw, 5rem);
+    transform: translateY(-50%);
+    z-index: 3;
+    width: min(560px, calc(100% - 2rem));
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(95, 118, 144, 0.28);
+    backdrop-filter: blur(14px);
+    border-radius: 22px;
+    padding: clamp(1.25rem, 3.2vw, 2.15rem);
+    box-shadow: 0 24px 60px rgba(26, 36, 48, 0.22);
+  }
+
+  .contact-kicker {
+    display: inline-block;
+    font-size: 0.75rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: #3f5973;
+    font-weight: 700;
+    margin-bottom: 0.95rem;
+  }
+
+  .contact-overlay h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    color: #1c1410;
+  }
+
+  .contact-overlay h2 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--accent);
+  }
+
+  .contact-overlay p {
+    color: #41576f;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    margin-bottom: 1.1rem;
+  }
+
+  .contact-meta {
+    display: grid;
+    gap: 0.55rem;
+    margin-bottom: 1.2rem;
+    color: #496179;
+    font-size: 0.83rem;
+  }
+
+  .contact-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
+  }
+
+  .contact-actions .btn-ghost {
+    border: 1px solid rgba(95, 118, 144, 0.28);
+    border-radius: 30px;
+    padding: 0.8rem 1.3rem;
+    background: rgba(255, 255, 255, 0.62);
+    min-height: auto;
+    color: #41576f;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2.5rem clamp(1.5rem, 5vw, 5rem);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+  }
+
+  .footer-logo {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem; font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .footer-copy { font-size: 0.8rem; color: var(--ink-muted); }
+
+  .footer-links {
+    display: flex; gap: 1.5rem; list-style: none;
+  }
+  .footer-links a { font-size: 0.8rem; color: var(--ink-muted); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--accent); }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
+    50% { transform: translateX(-50%) scale(1.08); opacity: 0.7; }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  @keyframes introLogoReveal {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.97);
+      filter: blur(3px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+  }
+
+  @keyframes introBackgroundReveal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes heroItemReveal {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scrollCueTrack {
+    0% {
+      opacity: 0;
+      transform: translateY(0);
+    }
+    20% {
+      opacity: 1;
+    }
+    80% {
+      opacity: 0.3;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scrollCueArrow {
+    0%, 100% {
+      opacity: 0;
+      transform: rotate(45deg) translate(-1px, -1px);
+    }
+    35% {
+      opacity: 0.9;
+    }
+    70% {
+      opacity: 0;
+      transform: rotate(45deg) translate(1px, 1px);
+    }
+  }
+
+  @media (max-width: 640px) {
+     .hero-context-grid { grid-template-columns: 1fr; }
+    .use-cases-title { font-size: 1.45rem; }
+    .hero-scroll-cue {
+      bottom: 1.1rem;
+      font-size: 0.64rem;
+      gap: 0.45rem;
+      
+    }
+    .contact-overlay {
+      left: clamp(0.75rem, 4vw, 1.5rem);
+      right: clamp(0.75rem, 4vw, 1.5rem);
+      top: auto;
+      bottom: clamp(1rem, 4vw, 1.5rem);
+      transform: none;
+      width: auto;
+      text-align: left;
+      padding: clamp(1rem, 3vw, 1.5rem);
+    }
+    .contact-meta {
+      justify-items: flex-start;
+      gap: 0.65rem;
+    }
+    .contact-actions {
+      justify-content: flex-start;
+    }
+    footer { flex-direction: column; text-align: center; }
+    .footer-links { justify-content: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+
+    .intro-screen {
+      display: none !important;
+    }
+
+    .hero-brand,
+    .hero-item {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    html.fullpage-mode,
+    body.fullpage-mode {
+      scroll-snap-type: y mandatory;
+    }
+
+    .fullpage-section {
+      min-height: 100svh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
+
+    .section.fullpage-section {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .section-contact.fullpage-section {
+      display: block;
+      padding: 0;
+    }
+  }
+
+  /* SECTION EXPERIENCE: color morph + navigation */
+  .bg-stage {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background-color: var(--bg);
+    transition: background-color 900ms cubic-bezier(0.45, 0, 0.25, 1);
+  }
+
+  .bg-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(58% 48% at 78% 28%, rgba(232, 96, 10, 0.10), transparent 70%);
+    opacity: var(--stage-glow, 0.55);
+    transition: opacity 900ms ease;
+  }
+
+  .section-nav {
+    position: fixed;
+    top: 50%;
+    right: clamp(14px, 2vw, 26px);
+    transform: translateY(-50%);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  .section-nav.is-ready {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .section-nav-dot {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+
+  .section-nav-dot::after {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(120, 90, 60, 0.32);
+    transition: transform 0.4s cubic-bezier(0.3, 0.8, 0.3, 1), background-color 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .section-nav-dot:hover::after {
+    background: rgba(232, 96, 10, 0.6);
+    transform: scale(1.25);
+  }
+
+  .section-nav-dot.is-active::after {
+    background: var(--accent);
+    box-shadow: 0 0 0 5px rgba(232, 96, 10, 0.18);
+  }
+
+  .section-nav-label {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%) translateX(8px);
+    white-space: nowrap;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    color: var(--ink-soft);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+    box-shadow: 0 6px 18px rgba(28, 20, 16, 0.08);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .section-nav-dot:hover .section-nav-label {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+
+  .section-nav.is-peeking .section-nav-label {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+
+  .section-nav.on-dark .section-nav-dot::after {
+    background: rgba(255, 255, 255, 0.42);
+  }
+
+  .section-nav.on-dark .section-nav-dot.is-active::after {
+    background: #fff;
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.22);
+  }
+
+  .section-nav.on-dark .section-nav-label {
+    color: #fff;
+    background: rgba(18, 22, 30, 0.82);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  @media (max-width: 1023px) {
+    .section-nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-stage" id="bg-stage" aria-hidden="true"></div>
+<nav class="section-nav" id="section-nav" aria-label="Bölüm navigasyonu"></nav>
+
+<div class="intro-screen" id="intro-screen" aria-label="Açılış ekranı">
+  <div class="intro-inner">
+    <div class="intro-logo-wrap" id="intro-logo-wrap">
+      <img src="assets/image/cakmakci-teknoloji2.png" alt="Çakmakçı Teknoloji" class="intro-logo" id="intro-logo">
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero fullpage-section" data-fullpage-section data-bg="#f7f6f3" data-nav-label="Giriş">
+  <div class="hero-brand" id="hero-brand" aria-hidden="true">
+    <img src="assets/image/cakmakci-teknoloji2.png" alt="Çakmakçı Teknoloji logosu">
+  </div>
+
+  <h1 class="hero-item hero-item-headline">İş süreçlerinizde<br><em>ölçülebilir sonuç ve sürdürülebilir büyüme</em></h1>
+
+  <p class="hero-item hero-item-copy">Çakmakçı Teknoloji, ekiplerinizin operasyon, proje ve raporlama akışlarını tek platformda birleştirir. Karar almayı hızlandıran, dağınıklığı azaltan yalın dijital altyapı sunar.</p>
+
+  
+
+  <a href="#use-cases" class="hero-scroll-cue" aria-label="Aşağı kaydırarak devam edin">
+    <span class="hero-scroll-cue-label">Aşağı kaydır</span>
+    <span class="hero-scroll-cue-mouse" aria-hidden="true"></span>
+    <span class="hero-scroll-cue-arrows" aria-hidden="true">
+      <span></span>
+      <span></span>
+    </span>
+  </a>
+</section>
+
+<section class="section section-use-cases fullpage-section reveal" id="use-cases" data-fullpage-section data-bg="#fbf2e9" data-nav-label="Çözüm">
+  <div class="hero-context use-cases-shell">
+    <div class="hero-context-head">
+      <h2 class="use-cases-title">Finansal operasyonunuzu tek yönetim katmanında toplayın</h2>
+      <p class="use-cases-sub">Her ekip kendi işine odaklanırken, yönetim tarafı gerçek zamanlı operasyon kalitesi ve teslim görünürlüğünü aynı ekranda izler.</p>
+    </div>
+    <div class="hero-context-grid">
+      <article class="hero-context-card">
+        <div class="hero-context-top">
+          <div class="hero-context-icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M3 10h14M6 6h8M6 14h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <span class="hero-context-tag">Süreç</span>
+        </div>
+        <h3>Operasyon yönetimi</h3>
+        <p>Saha ve ofis süreçlerini ortak bir akışta yönetip gecikme risklerini erken görün.</p>
+        <ul class="hero-context-list">
+          <li>İş emri ve görev takibi</li>
+          <li>Bekleyen işlerde anlık uyarı</li>
+          <li>Departmanlar arası koordinasyon</li>
+        </ul>
+      </article>
+      <article class="hero-context-card">
+        <div class="hero-context-top">
+          <div class="hero-context-icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M4 15V8m6 7V5m6 10v-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <span class="hero-context-tag">Teslimat</span>
+        </div>
+        <h3>Proje teslim süreçleri</h3>
+        <p>Planlama, onay ve teslim adımlarını tek ekranda toplu şekilde ilerletin.</p>
+        <ul class="hero-context-list">
+          <li>Milestone bazlı görünüm</li>
+          <li>Onay zinciri ve sorumluluk netliği</li>
+          <li>Süre ve efor sapmalarını izleme</li>
+        </ul>
+      </article>
+      <article class="hero-context-card">
+        <div class="hero-context-top">
+          <div class="hero-context-icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h10M3 15h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <span class="hero-context-tag">Yönetim</span>
+        </div>
+        <h3>Yönetim raporlaması</h3>
+        <p>Yönetim ekiplerine toplantı beklemeden karar destek verisi sağlayın.</p>
+        <ul class="hero-context-list">
+          <li>Haftalık özet ve KPI panosu</li>
+          <li>Darboğaz ve risk analizi</li>
+          <li>Aksiyon odaklı raporlama</li>
+        </ul>
+      </article>
+    </div>
+    <div class="use-cases-foot">
+      <span>Canlı görünürlük</span>
+      <span>Ölçülebilir performans</span>
+      <span>Düşük operasyon yükü</span>
+    </div>
+  </div>
+</section>
+
+<section class="section section-about fullpage-section reveal" id="about" data-fullpage-section data-bg="#2f2722" data-nav-label="Hakkımızda" data-nav-theme="dark">
+  <div class="about-shell">
+    <div class="about-layout">
+      <article class="about-intro">
+        <span class="about-kicker">Kurumsal Çerçeve</span>
+        <h2 class="about-title">Dijitalleşmeyi sadece yazılım değil, operasyon disiplini olarak ele alıyoruz.</h2>
+        <p class="about-sub">Çakmakçı Teknoloji, şirketlerin dağınık iş akışlarını tek bir yönetim ritmine dönüştürür. Amacımız, teknolojiyi görünür kılmak değil; karar kalitesini ve ekip senkronunu kalıcı biçimde yükseltmektir.</p>
+        <p class="about-claim">Müşteri için doğru sonuç: daha az operasyon stresi, daha net teslim görünürlüğü, daha hızlı yönetim döngüsü.</p>
+
+        <div class="about-metrics">
+          <span>Ölçülebilir sonuç</span>
+          <span>Sürdürülebilir operasyon</span>
+          <span>Uzun vadeli iş ortaklığı</span>
+        </div>
+      </article>
+
+      <div class="about-panels">
+        <article class="about-panel mission">
+          <h3>Misyon</h3>
+          <p>Ekiplerin günlük operasyonunda karar kalitesini yükselten, raporlama yükünü azaltan ve koordinasyonu tek gerçeklik etrafında toplayan sade teknoloji altyapısı sunmak.</p>
+          <ul class="about-list">
+            <li>Tek panelde operasyon görünürlüğü</li>
+            <li>Manuel takip yükünü azaltan otomasyon</li>
+            <li>Karar döngüsünü hızlandıran net veri</li>
+          </ul>
+        </article>
+
+        <article class="about-panel vision">
+          <h3>Vizyon</h3>
+          <p>Operasyon teknolojilerinde bölgede referans gösterilen; süreç standardını artıran, farklı sektörlere ölçeklenebilir değer üreten güvenilir bir teknoloji ortağı olmak.</p>
+          <ul class="about-list">
+            <li>Sektörler arası uygulanabilir platform</li>
+            <li>Sürekli gelişen veri odaklı yaklaşım</li>
+            <li>İş etkisi odaklı ürün gelişimi</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section fullpage-section" id="features" data-fullpage-section data-bg="#eef3f2" data-nav-label="Özellikler">
+  <div class="reveal">
+    <div class="section-eyebrow">Ne Sağlıyoruz</div>
+    <h2 class="section-title">Dağınık operasyonu tek bir <em>yönetim katmanı</em> haline getirir</h2>
+    <p class="section-sub">Saha, ofis, proje ve yönetim ekipleri aynı veriyle çalışır. Takip yükünü azaltırken süreç kalitesini artırır.</p>
+  </div>
+
+  <div class="features-swiper swiper reveal" id="features-swiper">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide">
+        <article class="feature-card">
+      <div class="feature-icon feature-icon-purple">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L3 7v11h5v-5h4v5h5V7L10 2z" stroke="#e8600a" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>Merkezi görünürlük</h3>
+      <p>Farklı araçlarda duran işleri tek yerde birleştirir. Herkes aynı güncel durum tablosunu görür.</p>
+        </article>
+      </div>
+
+      <div class="swiper-slide">
+        <article class="feature-card">
+      <div class="feature-icon feature-icon-green">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="#2a9d6e" stroke-width="1.5"/><path d="M10 7v3l2 2" stroke="#2a9d6e" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <h3>Canlı durum akışı</h3>
+      <p>Güncellemeler manuel toplama istemez. Değişen durumlar, ekiplerin kullandığı araçlardan otomatik akar.</p>
+        </article>
+      </div>
+
+      <div class="swiper-slide">
+        <article class="feature-card">
+      <div class="feature-icon feature-icon-amber">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M4 6h12M4 14h8" stroke="#d97706" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <h3>Doğru kişiye doğru uyarı</h3>
+      <p>Gereksiz bildirim kalabalığı yerine, sadece aksiyon gerektiren noktalarda uyarı üretir.</p>
+        </article>
+      </div>
+
+      <div class="swiper-slide">
+        <article class="feature-card">
+      <div class="feature-icon feature-icon-purple">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="6" height="6" rx="1.5" stroke="#e8600a" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5" stroke="#e8600a" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5" stroke="#e8600a" stroke-width="1.5"/><path d="M14 11v6M11 14h6" stroke="#e8600a" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <h3>Takıma göre yapı</h3>
+      <p>Şablonu dayatmaz. Operasyon, ürün, satış veya destek ekipleri kendi akışına uygun alanlar kurar.</p>
+        </article>
+      </div>
+
+      <div class="swiper-slide">
+        <article class="feature-card">
+      <div class="feature-icon feature-icon-green">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M17 12a7 7 0 1 1-14 0 7 7 0 0 1 14 0zM10 9v3l2 1.5" stroke="#2a9d6e" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <h3>Yönetim özeti</h3>
+      <p>Haftalık durum maili, yöneticiler için uzun toplantıların yerini alacak kadar kısa ve anlaşılır hazırlanır.</p>
+        </article>
+      </div>
+
+      <div class="swiper-slide">
+        <article class="feature-card">
+      <div class="feature-icon feature-icon-amber">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#d97706" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <h3>Mevcut araçlarla uyumlu</h3>
+      <p>Slack, Jira, Linear, HubSpot ve benzeri araçlarla birlikte çalışır. Ekip alışkanlığını bozmaz.</p>
+        </article>
+      </div>
+    </div>
+
+    <div class="swiper-button-prev" aria-label="Önceki"></div>
+    <div class="swiper-button-next" aria-label="Sonraki"></div>
+    <div class="swiper-pagination"></div>
+  </div>
+
+  
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials fullpage-section" id="testimonials" data-fullpage-section data-bg="#e8600a" data-nav-label="Referanslar" data-nav-theme="dark">
+  <div class="testimonials-inner">
+    <div class="testimonials-header reveal">
+      <h2>Şirketler <em>neden</em> Çakmakçı Teknoloji'yi seçiyor</h2>
+      <p class="testimonials-sub">Farklı sektörlerden ekiplerin ölçülebilir sonuç deneyimi.</p>
+    </div>
+    <div class="testimonials-grid reveal">
+      <div class="testimonial-card">
+        <p class="testimonial-quote">"Haftalık durum toplama eforumuz belirgin şekilde azaldı. Yönetim raporları artık tek ekran üzerinden ilerliyor."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">EA</div>
+          <div>
+            <div class="author-name">Emre Aydın</div>
+            <div class="author-role">CTO, Parsica</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-quote">"Proje yönetimi tarafında en büyük kazancımız, dağınık güncellemeleri toplama işinin sistematik hale gelmesi oldu."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">SD</div>
+          <div>
+            <div class="author-name">Selin Doğan</div>
+            <div class="author-role">Ürün Müdürü, Kobi.io</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-quote">"Uzak takımlarla çalışmak artık çok daha az kaotik. Herkes ne yapıyor, nerede sıkışmış — anlık görüyorsun."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">YK</div>
+          <div>
+            <div class="author-name">Yusuf Kara</div>
+            <div class="author-role">Operasyon Direktörü, Norba</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- CTA STRIP -->
+<section class="section section-contact fullpage-section reveal" id="contact" data-fullpage-section data-bg="#0f1622" data-nav-label="İletişim" data-nav-theme="dark">
+  <div class="contact-map">
+    <div id="leaflet-contact-map" aria-label="İletişim haritası"></div>
+    <div class="contact-overlay">
+      <span class="contact-kicker">Son adım</span>
+      <h2>Süreçlerinizi birlikte analiz edelim,<br><em>size özel bir yol haritası çıkaralım</em></h2>
+      <p>Demo, teknik kapsam ve proje planı için ekibimizle doğrudan iletişime geçin. İlk görüşmede mevcut operasyon yapınızı netleştirelim.</p>
+
+      <div class="contact-meta">
+        <span>📍 İstanbul, Türkiye</span>
+        <span>✉️ hello@cakmakciteknoloji.com</span>
+        <span>📞 +90 (212) 000 00 00</span>
+      </div>
+
+      <div class="contact-actions">
+        <a href="#" class="btn-primary" style="white-space:nowrap; padding: 0.95rem 2.4rem; min-height: auto;">Görüşme talep et</a>
+        <a href="mailto:hello@cakmakciteknoloji.com" class="btn-ghost" style="color: #41576f;">E-posta gönder</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Çakmakçı Teknoloji</div>
+  <span class="footer-copy">© 2026 Çakmakçı Teknoloji. Tüm hakları saklıdır.</span>
+  <ul class="footer-links">
+    <li><a href="#">Gizlilik</a></li>
+    <li><a href="#">Kullanım Şartları</a></li>
+    <li><a href="#">Destek</a></li>
+  </ul>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  const introScreen = document.getElementById('intro-screen');
+  const introLogoWrap = document.getElementById('intro-logo-wrap');
+  const introLogo = document.getElementById('intro-logo');
+  const heroBrand = document.getElementById('hero-brand');
+  const heroBrandImage = heroBrand ? heroBrand.querySelector('img') : null;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const introIsActive = () => document.body.classList.contains('intro-active');
+  let hasLoggedHeroBrandOnLoad = false;
+
+
+  const logHeroBrandMetricsWhenReady = async () => {
+    if (!heroBrandImage || hasLoggedHeroBrandOnLoad) return;
+
+    try {
+      if ('decode' in heroBrandImage) {
+        await heroBrandImage.decode();
+      } else if (!heroBrandImage.complete) {
+        await new Promise((resolve) => {
+          heroBrandImage.addEventListener('load', resolve, { once: true });
+          heroBrandImage.addEventListener('error', resolve, { once: true });
+        });
+      }
+    } catch {
+      // Ignore decode failures and log whatever layout is available.
+    }
+
+    hasLoggedHeroBrandOnLoad = true;
+  };
+
+  if (!prefersReducedMotion) {
+    document.body.classList.add('intro-active');
+    document.documentElement.classList.add('intro-active');
+  } else {
+    document.body.classList.add('hero-reveal');
+    document.body.classList.add('intro-complete');
+  }
+
+  const introHoldDuration = 220;
+  const introMorphDuration = 1080;
+  const introSwapDelay = 80;
+  const introFadeDuration = 360;
+
+  const runIntroTransition = () => {
+    if (!introScreen || !introLogoWrap || !heroBrand || prefersReducedMotion) return;
+
+    const introRect = introLogo.getBoundingClientRect();
+    const targetRect = heroBrandImage ? heroBrandImage.getBoundingClientRect() : heroBrand.getBoundingClientRect();
+
+    const shiftX = (targetRect.left + targetRect.width / 2) - (introRect.left + introRect.width / 2);
+    const shiftY = (targetRect.top + targetRect.height / 2) - (introRect.top + introRect.height / 2);
+    const baseScale = targetRect.width / introRect.width;
+    const scale = Math.max(0.2, baseScale);
+
+    introScreen.style.setProperty('--logo-shift-x', shiftX.toFixed(2) + 'px');
+    introScreen.style.setProperty('--logo-shift-y', shiftY.toFixed(2) + 'px');
+    introScreen.style.setProperty('--logo-final-scale', scale.toFixed(3));
+
+    document.body.classList.add('hero-reveal');
+    introScreen.classList.add('is-transitioning');
+
+    window.setTimeout(() => {
+      introScreen.classList.add('is-settling');
+      document.body.classList.add('intro-complete');
+
+      window.setTimeout(() => {
+        introScreen.classList.add('is-finishing');
+
+        window.setTimeout(() => {
+          introScreen.remove();
+          document.body.classList.remove('intro-active');
+          document.documentElement.classList.remove('intro-active');
+        }, introFadeDuration);
+      }, introSwapDelay);
+    }, introMorphDuration);
+  };
+
+  if (!prefersReducedMotion && introLogo) {
+    introLogo.addEventListener('error', () => {
+      introLogo.setAttribute('alt', 'Çakmakçı Teknoloji');
+    });
+  }
+
+  window.addEventListener('load', () => {
+    if (prefersReducedMotion) return;
+    logHeroBrandMetricsWhenReady();
+    window.setTimeout(runIntroTransition, introHoldDuration);
+  });
+
+  if (prefersReducedMotion) {
+    window.addEventListener('load', () => {
+      logHeroBrandMetricsWhenReady();
+    });
+  }
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  const featuresSwiperEl = document.getElementById('features-swiper');
+  if (featuresSwiperEl && typeof Swiper !== 'undefined') {
+    new Swiper(featuresSwiperEl, {
+      slidesPerView: 1,
+      spaceBetween: 14,
+      speed: 620,
+      grabCursor: true,
+      autoplay: {
+        delay: 2500,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true,
+      },
+      pagination: {
+        el: '.features-swiper .swiper-pagination',
+        clickable: true,
+      },
+      navigation: {
+        nextEl: '.features-swiper .swiper-button-next',
+        prevEl: '.features-swiper .swiper-button-prev',
+      },
+      breakpoints: {
+        768: {
+          slidesPerView: 2,
+          spaceBetween: 16,
+        },
+        1200: {
+          slidesPerView: 3,
+          spaceBetween: 18,
+        },
+      },
+    });
+  }
+
+  const contactMapEl = document.getElementById('leaflet-contact-map');
+  if (contactMapEl && typeof L !== 'undefined') {
+    const contactMap = L.map(contactMapEl, {
+      zoomControl: false,
+      scrollWheelZoom: false,
+      dragging: true,
+      tap: true,
+      attributionControl: true,
+    }).setView([41.0082, 28.9784], 12);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      attribution: '',
+    }).addTo(contactMap);
+
+    L.circleMarker([40.993560, 29.118295], {
+      radius: 9,
+      color: '#e8600a',
+      weight: 1,
+      fillColor: '#e8600a',
+      fillOpacity: 0.5,
+      zoomAnimation: true,
+      
+    }).addTo(contactMap).bindPopup('Çakmakçı Teknoloji · İstanbul');
+
+    window.addEventListener('resize', () => {
+      contactMap.invalidateSize();
+    });
+
+    window.setTimeout(() => contactMap.invalidateSize(), 120);
+  }
+
+  // Section theming (color morph) + side navigation
+  (function () {
+    const sections = Array.from(document.querySelectorAll('[data-fullpage-section]'));
+    if (!sections.length) return;
+
+    const bgStage = document.getElementById('bg-stage');
+    const nav = document.getElementById('section-nav');
+    const dots = [];
+    let currentIndex = -1;
+    let navPeekTimeoutId = null;
+    let navPeekLoopId = null;
+
+    const getNavPeekDelay = () => currentIndex <= 0 ? 10000 : 26000;
+
+    const getNavPeekDuration = () => currentIndex <= 0 ? 2200 : 1100;
+
+    const queueNextNavPeek = () => {
+      if (!nav || prefersReducedMotion) return;
+      window.clearTimeout(navPeekLoopId);
+      navPeekLoopId = window.setTimeout(() => {
+        revealNavLabels();
+        queueNextNavPeek();
+      }, getNavPeekDelay());
+    };
+
+    const revealNavLabels = () => {
+      if (!nav || prefersReducedMotion || document.hidden || nav.matches(':hover')) return;
+      nav.classList.add('is-peeking');
+      window.clearTimeout(navPeekTimeoutId);
+      navPeekTimeoutId = window.setTimeout(() => {
+        nav.classList.remove('is-peeking');
+      }, getNavPeekDuration());
+    };
+
+    if (nav) {
+      sections.forEach((section, index) => {
+        const labelText = section.dataset.navLabel || ('Bölüm ' + (index + 1));
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'section-nav-dot';
+        dot.setAttribute('aria-label', labelText);
+        const label = document.createElement('span');
+        label.className = 'section-nav-label';
+        label.textContent = labelText;
+        dot.appendChild(label);
+        dot.addEventListener('click', () => {
+          section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        nav.appendChild(dot);
+        dots.push(dot);
+      });
+    }
+
+    const applyTheme = (index) => {
+      if (index === currentIndex) return;
+      const section = sections[index];
+      if (!section) return;
+      currentIndex = index;
+
+      if (bgStage && section.dataset.bg) {
+        bgStage.style.backgroundColor = section.dataset.bg;
+      }
+
+      const isDark = section.dataset.navTheme === 'dark';
+      if (bgStage) {
+        bgStage.style.setProperty('--stage-glow', isDark ? '0' : '0.55');
+      }
+      if (nav) {
+        nav.classList.toggle('on-dark', isDark);
+        dots.forEach((dot, i) => dot.classList.toggle('is-active', i === index));
+      }
+
+      if (!prefersReducedMotion) {
+        queueNextNavPeek();
+      }
+    };
+
+    applyTheme(0);
+    if (nav) {
+      requestAnimationFrame(() => {
+        nav.classList.add('is-ready');
+        if (!prefersReducedMotion) {
+          window.setTimeout(revealNavLabels, 1400);
+          queueNextNavPeek();
+        }
+      });
+    }
+
+    const themeObserver = new IntersectionObserver((entries) => {
+      let best = null;
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && (!best || entry.intersectionRatio > best.intersectionRatio)) {
+          best = entry;
+        }
+      });
+      if (best) {
+        const index = sections.indexOf(best.target);
+        if (index !== -1) applyTheme(index);
+      }
+    }, { threshold: [0.5, 0.75] });
+
+    sections.forEach((section) => themeObserver.observe(section));
+  })();
+
+  // Fullpage-style section scrolling on desktop (without fullPage.js)
+  const desktopViewport = window.matchMedia('(min-width: 1024px)');
+
+  if (!prefersReducedMotion && desktopViewport.matches) {
+    document.documentElement.classList.add('fullpage-mode');
+    document.body.classList.add('fullpage-mode');
+
+    const fullpageSections = Array.from(document.querySelectorAll('[data-fullpage-section]'));
+    let activeIndex = 0;
+    let isTransitioning = false;
+    let touchStartY = 0;
+
+    const clampIndex = (value) => Math.max(0, Math.min(value, fullpageSections.length - 1));
+
+    const getNearestSectionIndex = () => {
+      const scrollTop = window.scrollY;
+      let nearest = 0;
+      let minDistance = Number.POSITIVE_INFINITY;
+
+      fullpageSections.forEach((section, index) => {
+        const distance = Math.abs(section.offsetTop - scrollTop);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearest = index;
+        }
+      });
+
+      return nearest;
+    };
+
+    const goToSection = (index) => {
+      const nextIndex = clampIndex(index);
+      if (nextIndex === activeIndex || isTransitioning) return;
+
+      isTransitioning = true;
+      activeIndex = nextIndex;
+      fullpageSections[nextIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      window.setTimeout(() => {
+        isTransitioning = false;
+      }, 700);
+    };
+
+    const stepSection = (direction) => {
+      if (introIsActive()) return;
+      activeIndex = getNearestSectionIndex();
+      goToSection(activeIndex + direction);
+    };
+
+    window.addEventListener('wheel', (event) => {
+      if (introIsActive()) {
+        event.preventDefault();
+        return;
+      }
+
+      const inSwiper = event.target instanceof Element && event.target.closest('#features-swiper');
+      const inContactMap = event.target instanceof Element && event.target.closest('#leaflet-contact-map');
+      if (inSwiper || inContactMap) {
+        return;
+      }
+
+      if (Math.abs(event.deltaY) < 10 || isTransitioning) return;
+      event.preventDefault();
+      stepSection(event.deltaY > 0 ? 1 : -1);
+    }, { passive: false });
+
+    window.addEventListener('keydown', (event) => {
+      if (introIsActive()) {
+        if (event.key === 'ArrowDown' || event.key === 'PageDown' || event.key === 'ArrowUp' || event.key === 'PageUp' || event.key === 'Home' || event.key === 'End' || event.key === ' ') {
+          event.preventDefault();
+        }
+        return;
+      }
+      if (isTransitioning) return;
+
+      if (event.key === 'ArrowDown' || event.key === 'PageDown') {
+        event.preventDefault();
+        stepSection(1);
+      }
+
+      if (event.key === 'ArrowUp' || event.key === 'PageUp') {
+        event.preventDefault();
+        stepSection(-1);
+      }
+
+      if (event.key === 'Home') {
+        event.preventDefault();
+        goToSection(0);
+      }
+
+      if (event.key === 'End') {
+        event.preventDefault();
+        goToSection(fullpageSections.length - 1);
+      }
+    });
+
+    window.addEventListener('touchstart', (event) => {
+      touchStartY = event.changedTouches[0].clientY;
+    }, { passive: true });
+
+    window.addEventListener('touchend', (event) => {
+      if (introIsActive()) return;
+      const touchEndY = event.changedTouches[0].clientY;
+      const delta = touchStartY - touchEndY;
+      if (Math.abs(delta) < 45 || isTransitioning) return;
+      stepSection(delta > 0 ? 1 : -1);
+    }, { passive: true });
+
+    window.addEventListener('scroll', () => {
+      if (!isTransitioning) {
+        activeIndex = getNearestSectionIndex();
+      }
+    }, { passive: true });
+  }
+</script>
+
+</body>
+</html>
