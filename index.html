@@ -2613,10 +2613,12 @@
       document.documentElement.classList.add('fullpage-mode');
       document.body.classList.add('fullpage-mode');
 
+      // Touch devices (mobile/tablet) rely purely on CSS scroll-snap — no JS interception
+      const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+
       const fullpageSections = Array.from(document.querySelectorAll('[data-fullpage-section]'));
       let activeIndex = 0;
       let isTransitioning = false;
-      let touchStartY = 0;
 
       const clampIndex = (value) => Math.max(0, Math.min(value, fullpageSections.length - 1));
 
@@ -2670,37 +2672,37 @@
       const isAtBottomOfScroll = (element) => element.scrollTop + element.clientHeight >= element.scrollHeight - 10;
       const isAtTopOfScroll = (element) => element.scrollTop <= 10;
 
-      window.addEventListener('wheel', (event) => {
-        if (introIsActive()) {
+      if (!isTouchDevice) {
+        window.addEventListener('wheel', (event) => {
+          if (introIsActive()) {
+            event.preventDefault();
+            return;
+          }
+
+          const inSwiper = event.target instanceof Element && event.target.closest('#features-swiper');
+          const inContactMap = event.target instanceof Element && event.target.closest('#leaflet-contact-map');
+          const inFooterDrawer = event.target instanceof Element && event.target.closest('#site-footer, #footer-toggle');
+          if (inSwiper || inContactMap || inFooterDrawer) {
+            return;
+          }
+
+          if (Math.abs(event.deltaY) < 10 || isTransitioning) return;
+
+          // Check if event landed in a scrollable container
+          const scrollableParent = getScrollableParent(event.target);
+          if (scrollableParent) {
+            if (event.deltaY > 0 && !isAtBottomOfScroll(scrollableParent)) {
+              return;
+            }
+            if (event.deltaY < 0 && !isAtTopOfScroll(scrollableParent)) {
+              return;
+            }
+          }
+
           event.preventDefault();
-          return;
-        }
-
-        const inSwiper = event.target instanceof Element && event.target.closest('#features-swiper');
-        const inContactMap = event.target instanceof Element && event.target.closest('#leaflet-contact-map');
-        const inFooterDrawer = event.target instanceof Element && event.target.closest('#site-footer, #footer-toggle');
-        if (inSwiper || inContactMap || inFooterDrawer) {
-          return;
-        }
-
-        if (Math.abs(event.deltaY) < 10 || isTransitioning) return;
-
-        // Check if event landed in a scrollable container
-        const scrollableParent = getScrollableParent(event.target);
-        if (scrollableParent) {
-          if (event.deltaY > 0 && !isAtBottomOfScroll(scrollableParent)) {
-            // Allow scroll down within container
-            return;
-          }
-          if (event.deltaY < 0 && !isAtTopOfScroll(scrollableParent)) {
-            // Allow scroll up within container
-            return;
-          }
-        }
-
-        event.preventDefault();
-        stepSection(event.deltaY > 0 ? 1 : -1);
-      }, { passive: false });
+          stepSection(event.deltaY > 0 ? 1 : -1);
+        }, { passive: false });
+      }
 
       window.addEventListener('keydown', (event) => {
         if (introIsActive()) {
@@ -2731,32 +2733,6 @@
           goToSection(fullpageSections.length - 1);
         }
       });
-
-      window.addEventListener('touchstart', (event) => {
-        touchStartY = event.changedTouches[0].clientY;
-      }, { passive: true });
-
-      window.addEventListener('touchend', (event) => {
-        if (introIsActive()) return;
-        const touchEndY = event.changedTouches[0].clientY;
-        const delta = touchStartY - touchEndY;
-        if (Math.abs(delta) < 45 || isTransitioning) return;
-
-        // Check if gesture landed in a scrollable container
-        const scrollableParent = getScrollableParent(event.target);
-        if (scrollableParent) {
-          if (delta > 0 && !isAtBottomOfScroll(scrollableParent)) {
-            // Allow scroll down within container
-            return;
-          }
-          if (delta < 0 && !isAtTopOfScroll(scrollableParent)) {
-            // Allow scroll up within container
-            return;
-          }
-        }
-
-        stepSection(delta > 0 ? 1 : -1);
-      }, { passive: true });
 
       window.addEventListener('scroll', () => {
         if (!isTransitioning) {
