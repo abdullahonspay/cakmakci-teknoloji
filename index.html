@@ -482,6 +482,10 @@
       width: 100%;
     }
 
+    .hero-context-grid .swiper-wrapper {
+      display: contents;
+    }
+
     .use-cases-grid-pagination {
       display: none;
     }
@@ -1329,7 +1333,7 @@
     body.footer-toggle-visible .footer-toggle {
       opacity: 1;
       pointer-events: auto;
-      transform: translateX(-50%) translateY(30px);
+      transform: translateX(-50%) translateY(20px);
     }
 
     .footer-toggle:hover {
@@ -1341,9 +1345,22 @@
     }
 
     .footer-toggle-icon {
-      font-size: 1.8rem;
-      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
       transition: transform 0.35s ease;
+    }
+
+    .footer-toggle-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
     }
 
     body.footer-open .footer-toggle-icon {
@@ -1535,6 +1552,9 @@
     }
 
     @media (max-width: 640px) {
+      .use-cases-foot{
+        display: none;
+      }
       .hero-brand {
             width: min(32vw, 160px);
       }
@@ -2162,7 +2182,11 @@
 
   <button id="footer-toggle" class="footer-toggle" type="button" aria-controls="site-footer" aria-expanded="false"
     aria-label="Alt paneli aç">
-    <span class="footer-toggle-icon" aria-hidden="true">▲</span>
+    <span class="footer-toggle-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    </span>
   </button>
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
@@ -2449,7 +2473,13 @@
         dragging: true,
         tap: true,
         attributionControl: true,
-      }).setView([41.0082, 28.9784], 12);
+      });
+
+      const mapCenter = window.matchMedia('(max-width: 640px)').matches 
+        ? [40.993560, 29.118295] 
+        : [41.0082, 28.9784];
+      
+      contactMap.setView(mapCenter, 12);
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
