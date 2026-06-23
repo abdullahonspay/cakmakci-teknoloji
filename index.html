@@ -2574,8 +2574,12 @@
       const contactMap = L.map(contactMapEl, {
         zoomControl: false,
         scrollWheelZoom: false,
-        dragging: true,
-        tap: true,
+        dragging: false,
+        touchZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        tap: false,
         attributionControl: true,
       });
 
