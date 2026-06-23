@@ -616,6 +616,10 @@
       z-index: 2;
     }
 
+    .about-tab-nav {
+      display: none;
+    }
+
     .about-layout {
       display: grid;
       grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.25fr);
@@ -768,35 +772,98 @@
       .about-layout {
         grid-template-columns: 1fr;
         gap: clamp(0.8rem, 2vw, 1.2rem);
-        max-height: 90dvh;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding-right: 0.5rem;
       }
 
-      .about-layout::-webkit-scrollbar {
-        width: 6px;
+      .section-about.fullpage-section {
+        min-height: 100dvh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: max(4.5rem, env(safe-area-inset-top));
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        overflow: hidden;
       }
 
-      .about-layout::-webkit-scrollbar-track {
-        background: transparent;
+      .section-about .about-shell {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
       }
 
-      .about-layout::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 3px;
+      /* Tab nav — only visible on mobile */
+      .about-tab-nav {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid rgba(255,255,255,0.15);
+        margin-bottom: 1.2rem;
+        flex-shrink: 0;
       }
 
-      .about-layout::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.35);
+      .about-tab-btn {
+        flex: 1;
+        background: none;
+        border: none;
+        color: rgba(255,255,255,0.45);
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.6rem 0.4rem 0.7rem;
+        cursor: pointer;
+        position: relative;
+        transition: color 0.22s ease;
+      }
+
+      .about-tab-btn::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--accent, #e8600a);
+        transform: scaleX(0);
+        transition: transform 0.22s ease;
+      }
+
+      .about-tab-btn.is-active {
+        color: #fff;
+      }
+
+      .about-tab-btn.is-active::after {
+        transform: scaleX(1);
+      }
+
+      /* Tab panel show/hide on mobile */
+      .about-layout {
+        flex: 1;
+        min-height: 0;
+        display: block !important;
       }
 
       .about-panels {
-        gap: 0.7rem;
+        display: contents;
       }
 
-      .about-metrics {
-        justify-content: center;
+      .about-intro,
+      .about-panel {
+        display: none !important;
+      }
+
+      .about-intro.is-tab-active,
+      .about-panel.is-tab-active {
+        display: flex !important;
+        flex-direction: column;
+        animation: tabFadeIn 0.25s ease;
+      }
+
+      @keyframes tabFadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
       }
     }
 
@@ -1953,8 +2020,13 @@
   <section class="section section-about fullpage-section reveal" id="about" data-fullpage-section data-bg="#2f2722"
     data-nav-label="Hakkımızda" data-nav-theme="dark">
     <div class="about-shell">
+      <nav class="about-tab-nav" aria-label="Bölüm sekmeleri">
+        <button class="about-tab-btn is-active" data-tab="intro" type="button">Hakkımızda</button>
+        <button class="about-tab-btn" data-tab="mission" type="button">Misyon</button>
+        <button class="about-tab-btn" data-tab="vision" type="button">Vizyon</button>
+      </nav>
       <div class="about-layout">
-        <article class="about-intro">
+        <article class="about-intro" data-about-tab="intro">
           <span class="about-kicker">Kurumsal Çerçeve</span>
           <h2 class="about-title">Dijitalleşmeyi sadece yazılım değil, operasyon disiplini olarak ele alıyoruz.</h2>
           <p class="about-sub">Çakmakçı Teknoloji, şirketlerin dağınık iş akışlarını tek bir yönetim ritmine dönüştürür.
@@ -1971,7 +2043,7 @@
         </article>
 
         <div class="about-panels">
-          <article class="about-panel mission">
+          <article class="about-panel mission" data-about-tab="mission">
             <h3>Misyon</h3>
             <p>Ekiplerin günlük operasyonunda karar kalitesini yükselten, raporlama yükünü azaltan ve koordinasyonu tek
               gerçeklik etrafında toplayan sade teknoloji altyapısı sunmak.</p>
@@ -1982,7 +2054,7 @@
             </ul>
           </article>
 
-          <article class="about-panel vision">
+          <article class="about-panel vision" data-about-tab="vision">
             <h3>Vizyon</h3>
             <p>Operasyon teknolojilerinde bölgede referans gösterilen; süreç standardını artıran, farklı sektörlere
               ölçeklenebilir değer üreten güvenilir bir teknoloji ortağı olmak.</p>
@@ -2465,6 +2537,37 @@
 
     syncUseCasesSwiper();
     useCasesMobileQuery.addEventListener('change', syncUseCasesSwiper);
+
+    // About section tab logic (mobile only)
+    const aboutTabQuery = window.matchMedia('(max-width: 980px)');
+    const aboutTabBtns = document.querySelectorAll('.about-tab-btn');
+    const aboutTabPanels = document.querySelectorAll('[data-about-tab]');
+
+    const activateAboutTab = (tabId) => {
+      aboutTabBtns.forEach((btn) => {
+        btn.classList.toggle('is-active', btn.dataset.tab === tabId);
+      });
+      aboutTabPanels.forEach((panel) => {
+        panel.classList.toggle('is-tab-active', panel.dataset.aboutTab === tabId);
+      });
+    };
+
+    const initAboutTabs = () => {
+      if (aboutTabQuery.matches) {
+        activateAboutTab('intro');
+      }
+    };
+
+    aboutTabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (aboutTabQuery.matches) {
+          activateAboutTab(btn.dataset.tab);
+        }
+      });
+    });
+
+    initAboutTabs();
+    aboutTabQuery.addEventListener('change', initAboutTabs);
 
     const contactMapEl = document.getElementById('leaflet-contact-map');
     if (contactMapEl && typeof L !== 'undefined') {
