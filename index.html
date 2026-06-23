@@ -1790,17 +1790,6 @@
       scroll-snap-type: y mandatory;
     }
 
-    @media (max-width: 980px) {
-      html.fullpage-mode,
-      body.fullpage-mode {
-        scroll-snap-type: y proximity;
-      }
-
-      .fullpage-section {
-        scroll-snap-stop: normal;
-      }
-    }
-
     .fullpage-section {
       min-height: 100dvh;
       scroll-snap-align: start;
@@ -2768,17 +2757,21 @@
       sections.forEach((section) => themeObserver.observe(section));
     })();
 
-    // Fullpage-style section scrolling (all devices)
+    // Fullpage-style section scrolling (desktop only)
     if (!prefersReducedMotion) {
-      document.documentElement.classList.add('fullpage-mode');
-      document.body.classList.add('fullpage-mode');
+      const isTouchDevice = window.matchMedia('(max-width: 980px), (pointer: coarse)').matches;
+      if (isTouchDevice) {
+        document.documentElement.classList.remove('fullpage-mode');
+        document.body.classList.remove('fullpage-mode');
+      } else {
+        document.documentElement.classList.add('fullpage-mode');
+        document.body.classList.add('fullpage-mode');
+      }
 
-      // Touch devices (mobile/tablet) rely purely on CSS scroll-snap — no JS interception
-      const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
-
-      const fullpageSections = Array.from(document.querySelectorAll('[data-fullpage-section]'));
-      let activeIndex = 0;
-      let isTransitioning = false;
+      if (!isTouchDevice) {
+        const fullpageSections = Array.from(document.querySelectorAll('[data-fullpage-section]'));
+        let activeIndex = 0;
+        let isTransitioning = false;
 
       const clampIndex = (value) => Math.max(0, Math.min(value, fullpageSections.length - 1));
 
@@ -2832,37 +2825,35 @@
       const isAtBottomOfScroll = (element) => element.scrollTop + element.clientHeight >= element.scrollHeight - 10;
       const isAtTopOfScroll = (element) => element.scrollTop <= 10;
 
-      if (!isTouchDevice) {
-        window.addEventListener('wheel', (event) => {
-          if (introIsActive()) {
-            event.preventDefault();
-            return;
-          }
-
-          const inSwiper = event.target instanceof Element && event.target.closest('#features-swiper');
-          const inContactMap = event.target instanceof Element && event.target.closest('#leaflet-contact-map');
-          const inFooterDrawer = event.target instanceof Element && event.target.closest('#site-footer, #footer-toggle');
-          if (inSwiper || inContactMap || inFooterDrawer) {
-            return;
-          }
-
-          if (Math.abs(event.deltaY) < 10 || isTransitioning) return;
-
-          // Check if event landed in a scrollable container
-          const scrollableParent = getScrollableParent(event.target);
-          if (scrollableParent) {
-            if (event.deltaY > 0 && !isAtBottomOfScroll(scrollableParent)) {
-              return;
-            }
-            if (event.deltaY < 0 && !isAtTopOfScroll(scrollableParent)) {
-              return;
-            }
-          }
-
+      window.addEventListener('wheel', (event) => {
+        if (introIsActive()) {
           event.preventDefault();
-          stepSection(event.deltaY > 0 ? 1 : -1);
-        }, { passive: false });
-      }
+          return;
+        }
+
+        const inSwiper = event.target instanceof Element && event.target.closest('#features-swiper');
+        const inContactMap = event.target instanceof Element && event.target.closest('#leaflet-contact-map');
+        const inFooterDrawer = event.target instanceof Element && event.target.closest('#site-footer, #footer-toggle');
+        if (inSwiper || inContactMap || inFooterDrawer) {
+          return;
+        }
+
+        if (Math.abs(event.deltaY) < 10 || isTransitioning) return;
+
+        // Check if event landed in a scrollable container
+        const scrollableParent = getScrollableParent(event.target);
+        if (scrollableParent) {
+          if (event.deltaY > 0 && !isAtBottomOfScroll(scrollableParent)) {
+            return;
+          }
+          if (event.deltaY < 0 && !isAtTopOfScroll(scrollableParent)) {
+            return;
+          }
+        }
+
+        event.preventDefault();
+        stepSection(event.deltaY > 0 ? 1 : -1);
+      }, { passive: false });
 
       window.addEventListener('keydown', (event) => {
         if (introIsActive()) {
@@ -2894,7 +2885,6 @@
         }
       });
 
-      if (!isTouchDevice) {
         window.addEventListener('scroll', () => {
           if (!isTransitioning) {
             activeIndex = getNearestSectionIndex();
